@@ -1,45 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { 
-  ShoppingCart, 
-  ArrowRight, 
-  Zap, 
-  Heart, 
-  Leaf, 
-  FilterX, 
-  Star, 
-  CheckCircle2, 
+import {
+  ShoppingCart,
+  ArrowRight,
+  Zap,
+  Heart,
+  Leaf,
+  FilterX,
+  Star,
+  CheckCircle2,
   Instagram,
-  Send
+  Send,
+  Droplets
 } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import type { Product } from '@shared/types';
 import { useFilterStore } from '@/store/useFilterStore';
-import { useShallow } from 'zustand/react/shallow';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
 export function HomePage() {
-  // Zustand selectors - Primitives only per law
+  // Zustand selectors - STRICT: One field per store call, no useShallow
   const categoryId = useFilterStore((s) => s.categoryId);
   const maxPrice = useFilterStore((s) => s.maxPrice);
   const searchQuery = useFilterStore((s) => s.searchQuery);
-  const selectedTags = useFilterStore(useShallow((s) => s.selectedTags));
+  const selectedTagsString = useFilterStore((s) => s.selectedTags.join(','));
   const resetFilters = useFilterStore((s) => s.resetFilters);
+  // Derive stable array from primitive string to prevent re-renders
+  const selectedTags = useMemo(() => 
+    selectedTagsString ? selectedTagsString.split(',') : [], 
+    [selectedTagsString]
+  );
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', categoryId],
     queryFn: () => api<Product[]>(`/api/products${categoryId !== 'all' ? `?categoryId=${categoryId}` : ''}`),
   });
-  const filteredProducts = products?.filter(p => {
-    const matchesPrice = p.price <= maxPrice;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => p.tags.includes(tag));
-    return matchesPrice && matchesSearch && matchesTags;
-  });
+  const filteredProducts = useMemo(() => {
+    return products?.filter(p => {
+      const matchesPrice = p.price <= maxPrice;
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => p.tags.includes(tag));
+      return matchesPrice && matchesSearch && matchesTags;
+    });
+  }, [products, maxPrice, searchQuery, selectedTags]);
+  const hasActiveFilters = categoryId !== 'all' || selectedTags.length > 0 || searchQuery !== '';
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -52,7 +64,7 @@ export function HomePage() {
               transition={{ duration: 0.6 }}
             >
               <Badge variant="outline" className="mb-4 border-purple-berry text-purple-berry font-semibold px-4 py-1">
-                Natural & Saudável
+                Premium & Natural
               </Badge>
               <h1 className="text-display mb-6">
                 Desperte sua energia com o <span className="text-gradient">Néctar da Natureza</span>
@@ -62,20 +74,35 @@ export function HomePage() {
                 cuidadosamente preparados para elevar seu bem-estar e vitalidade.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="btn-gradient text-lg h-14 px-8 rounded-full" 
+                <Button
+                  size="lg"
+                  className="btn-gradient text-lg h-14 px-8 rounded-full hover:scale-105 active:scale-95 transition-transform"
                   onClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   Ver Cardápio <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry/5">
+                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry/5 transition-all">
                   Nossa História
                 </Button>
               </div>
             </motion.div>
           </div>
         </div>
+        {/* Floating Elements */}
+        <motion.div 
+          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 right-[15%] text-green-vibrant/20 hidden lg:block"
+        >
+          <Leaf size={120} />
+        </motion.div>
+        <motion.div 
+          animate={{ y: [0, 20, 0], rotate: [0, -10, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-20 right-[10%] text-purple-berry/10 hidden lg:block"
+        >
+          <Droplets size={160} />
+        </motion.div>
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-purple-berry/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-green-vibrant/10 rounded-full blur-3xl" />
       </section>
@@ -88,13 +115,13 @@ export function HomePage() {
               { icon: Zap, title: "Energia Pura", desc: "Rico em antioxidantes e gorduras boas para manter seu foco o dia todo." },
               { icon: Heart, title: "Foco na Saúde", desc: "Opções personalizadas para dietas veganas, proteicas e zero açúcar." }
             ].map((benefit, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="flex flex-col items-center text-center space-y-4 p-6 rounded-2xl bg-background shadow-sm"
+                className="flex flex-col items-center text-center space-y-4 p-8 rounded-3xl bg-background shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="h-16 w-16 rounded-2xl bg-green-vibrant/10 flex items-center justify-center text-green-vibrant">
                   <benefit.icon className="h-8 w-8" />
@@ -113,11 +140,11 @@ export function HomePage() {
             <div className="max-w-xl">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Escolhas do Especialista</h2>
               <p className="text-muted-foreground">
-                Explore nossa curadoria de superalimentos feitos para nutrir seu corpo.
+                Explore nossa curadoria de superalimentos feitos para nutrir seu corpo com o melhor que a terra oferece.
               </p>
             </div>
-            {(categoryId !== 'all' || selectedTags.length > 0 || searchQuery) && (
-              <Button variant="link" onClick={resetFilters} className="text-purple-berry p-0 h-auto font-semibold">
+            {hasActiveFilters && (
+              <Button variant="link" onClick={resetFilters} className="text-purple-berry p-0 h-auto font-semibold hover:no-underline">
                 Limpar todos os filtros
               </Button>
             )}
@@ -142,7 +169,7 @@ export function HomePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: idx * 0.05 }}
                 >
-                  <Card className="overflow-hidden h-full group hover:shadow-2xl transition-all duration-500 border-none bg-card shadow-lg flex flex-col">
+                  <Card className="overflow-hidden h-full group hover:shadow-2xl hover:shadow-purple-berry/10 transition-all duration-500 border-none bg-card shadow-lg flex flex-col">
                     <div className="aspect-[4/5] relative overflow-hidden">
                       <img
                         src={product.image}
@@ -154,22 +181,20 @@ export function HomePage() {
                         {product.tags[0]?.toUpperCase() || 'NOVO'}
                       </Badge>
                     </div>
-                    <CardHeader className="p-5 pb-2">
-                      <div className="flex justify-between items-start mb-1">
-                        <CardTitle className="text-lg font-bold group-hover:text-purple-berry transition-colors">{product.name}</CardTitle>
-                      </div>
-                      <CardDescription className="line-clamp-2 text-xs leading-relaxed">
+                    <CardHeader className="p-5 pb-2 flex-1">
+                      <CardTitle className="text-lg font-bold group-hover:text-purple-berry transition-colors">{product.name}</CardTitle>
+                      <CardDescription className="line-clamp-2 text-xs leading-relaxed mt-2">
                         {product.description}
                       </CardDescription>
                     </CardHeader>
-                    <div className="mt-auto p-5 pt-2 flex items-center justify-between">
+                    <div className="mt-auto p-5 pt-2 flex items-center justify-between border-t border-border/50">
                       <div className="flex flex-col">
                         <span className="text-xs text-muted-foreground line-through opacity-50">R$ {(product.price * 1.2).toFixed(2)}</span>
                         <span className="text-xl font-black text-purple-berry">
                           R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <Button size="icon" className="rounded-full h-11 w-11 btn-gradient shadow-lg">
+                      <Button size="icon" className="rounded-full h-11 w-11 btn-gradient shadow-lg hover:scale-110 active:scale-90 transition-transform">
                         <ShoppingCart className="h-5 w-5" />
                       </Button>
                     </div>
@@ -178,91 +203,106 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center glass rounded-3xl">
+            <div className="flex flex-col items-center justify-center py-24 text-center glass rounded-[2rem]">
               <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
                 <FilterX className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Ops! Nada por aqui.</h3>
+              <h3 className="text-2xl font-bold mb-3 text-foreground">Ops! Nada por aqui.</h3>
               <p className="text-muted-foreground mb-8 max-w-sm">
-                Não encontramos produtos que correspondam à sua busca. Que tal tentar uma categoria diferente?
+                Não encontramos produtos que correspondam aos seus filtros. Tente resetar ou mudar sua busca.
               </p>
-              <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full">Resetar Filtros</Button>
+              <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full h-12">Resetar Filtros</Button>
             </div>
           )}
         </div>
       </section>
-      {/* Testimonials - Static Grid for phase stability */}
+      {/* Premium Testimonials Slider */}
       <section className="py-16 md:py-24 bg-purple-berry text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Quem provou, amou</h2>
             <p className="text-purple-berry-foreground/80 max-w-xl mx-auto">
-              Veja por que a AçaiBloom é a escolha favorita de quem busca qualidade e sabor.
+              Veja por que a AçaiBloom é a escolha favorita de quem busca qualidade e sabor incomparável.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={30}
+            slidesPerView={1}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            className="pb-12"
+          >
             {[
-              { name: "Ana Silva", text: "O melhor açaí que já comi na vida! A granola é divina.", role: "Atleta" },
-              { name: "Lucas Rocha", text: "Os smoothies são perfeitos para o pós-treino. Recomendo muito!", role: "Nutricionista" },
-              { name: "Carla Mendes", text: "Entrega super rápida e o produto chega geladinho. Nota 10!", role: "Designer" }
+              { name: "Ana Silva", text: "O melhor açaí que já comi na vida! A granola é divina e super crocante.", role: "Atleta Profissional" },
+              { name: "Lucas Rocha", text: "Os smoothies são perfeitos para o pós-treino. Cremosos e nutritivos!", role: "Nutricionista" },
+              { name: "Carla Mendes", text: "Entrega super rápida e o produto chega geladinho. Experiência nota 10!", role: "UX Designer" },
+              { name: "Bruno Faustino", text: "Qualidade impecável. Dá pra sentir o frescor das frutas em cada colherada.", role: "Empresário" },
+              { name: "Mariana Costa", text: "A taça proteica salvou meu lanche da tarde. Saborosa e mata a fome!", role: "Crossfitter" }
             ].map((t, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl border border-white/10">
-                <div className="flex gap-1 mb-4 text-orange-peach">
-                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
-                </div>
-                <p className="italic mb-6 text-lg">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach">{t.name[0]}</div>
-                  <div>
-                    <p className="font-bold">{t.name}</p>
-                    <p className="text-xs text-purple-berry-foreground/60">{t.role}</p>
+              <SwiperSlide key={i}>
+                <div className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 h-full flex flex-col">
+                  <div className="flex gap-1 mb-4 text-orange-peach">
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
+                  </div>
+                  <p className="italic mb-6 text-lg flex-1">"{t.text}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
+                    <div>
+                      <p className="font-bold">{t.name}</p>
+                      <p className="text-xs text-purple-berry-foreground/60">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         </div>
       </section>
       {/* Newsletter */}
       <section className="py-16 md:py-24 border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-green-vibrant/10 rounded-[3rem] p-8 md:p-16 flex flex-col md:flex-row items-center gap-12">
-            <div className="flex-1 space-y-6 text-center md:text-left">
+          <div className="bg-green-vibrant/10 rounded-[3rem] p-8 md:p-16 flex flex-col lg:flex-row items-center gap-12">
+            <div className="flex-1 space-y-6 text-center lg:text-left">
               <h2 className="text-3xl md:text-5xl font-black text-purple-berry leading-tight">Ganhe 15% OFF na sua primeira compra!</h2>
-              <p className="text-lg text-muted-foreground">Cadastre-se para receber novidades, receitas saudáveis e descontos exclusivos.</p>
-              <ul className="flex flex-wrap justify-center md:justify-start gap-4">
+              <p className="text-lg text-muted-foreground">Cadastre-se para receber novidades, receitas saudáveis e descontos exclusivos do Bloom Club.</p>
+              <ul className="flex flex-wrap justify-center lg:justify-start gap-4">
                 <li className="flex items-center gap-2 text-sm font-bold text-purple-berry"><CheckCircle2 className="h-4 w-4" /> Ofertas Semanais</li>
                 <li className="flex items-center gap-2 text-sm font-bold text-purple-berry"><CheckCircle2 className="h-4 w-4" /> Novos Sabores</li>
                 <li className="flex items-center gap-2 text-sm font-bold text-purple-berry"><CheckCircle2 className="h-4 w-4" /> Dicas Nutricionais</li>
               </ul>
             </div>
-            <div className="w-full max-w-md bg-background p-2 rounded-full shadow-xl flex items-center pr-2 border">
-              <Input 
-                placeholder="Seu melhor e-mail" 
+            <div className="w-full max-w-md bg-background p-2 rounded-full shadow-2xl flex items-center pr-2 border border-green-vibrant/20">
+              <Input
+                placeholder="Seu melhor e-mail"
                 className="border-none bg-transparent focus-visible:ring-0 text-lg h-14 px-6 flex-1"
               />
-              <Button size="icon" className="h-12 w-12 rounded-full btn-gradient">
+              <Button size="icon" className="h-12 w-12 rounded-full btn-gradient hover:rotate-12 transition-all">
                 <Send className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </div>
       </section>
-      {/* Instagram Feed Placeholder */}
+      {/* Instagram Feed */}
       <section className="py-16 border-t overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2">
-              <Instagram className="h-6 w-6" /> @acaibloom.oficial
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="text-center md:text-left">
+            <h2 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2 text-foreground">
+              <Instagram className="h-6 w-6 text-purple-berry" /> @acaibloom.oficial
             </h2>
-            <p className="text-muted-foreground text-sm">Siga nossa jornada saudável no Instagram</p>
+            <p className="text-muted-foreground text-sm">Siga nossa jornada saudável no Instagram e use #AçaiBloom</p>
           </div>
-          <Button variant="outline" className="rounded-full border-purple-berry text-purple-berry">Ver Perfil</Button>
+          <Button variant="outline" className="rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry hover:text-white transition-colors">Ver Perfil Completo</Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="aspect-square bg-muted relative group cursor-pointer overflow-hidden">
-              <div className="absolute inset-0 bg-purple-berry/20 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+            <div key={i} className="aspect-square bg-muted relative group cursor-pointer overflow-hidden border border-border/50">
+              <div className="absolute inset-0 bg-purple-berry/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
                 <Instagram className="text-white h-8 w-8" />
               </div>
               <div className="w-full h-full bg-muted-foreground/10 animate-pulse" />
