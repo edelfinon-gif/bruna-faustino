@@ -3,22 +3,19 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-
-// Minimal real-world chat example types (shared by frontend and worker)
-export interface User {
+export interface Category {
   id: string;
   name: string;
+  slug: string;
 }
-
-export interface Chat {
+export interface Product {
   id: string;
-  title: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number; // epoch millis
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  image: string;
+  tags: string[]; // e.g., 'vegano', 'proteico', 'sem-açúcar'
+  calories: number;
+  isAvailable: boolean;
 }

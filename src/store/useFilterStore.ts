@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-export const DEFAULT_MAX_PRICE = 100;
 interface FilterState {
   categoryId: string;
   maxPrice: number;
@@ -13,7 +12,7 @@ interface FilterState {
 }
 export const useFilterStore = create<FilterState>((set) => ({
   categoryId: 'all',
-  maxPrice: DEFAULT_MAX_PRICE,
+  maxPrice: 100,
   searchQuery: '',
   selectedTags: [],
   setCategoryId: (id) => set({ categoryId: id }),
@@ -26,20 +25,8 @@ export const useFilterStore = create<FilterState>((set) => ({
   })),
   resetFilters: () => set({
     categoryId: 'all',
-    maxPrice: DEFAULT_MAX_PRICE,
+    maxPrice: 100,
     searchQuery: '',
     selectedTags: []
   }),
 }));
-/**
- * Helper to check if any filters are active.
- * Used in components to decide between "Empty State" and "Loading/Default State".
- */
-export const checkIsFilterActive = (state: FilterState) => {
-  return (
-    state.categoryId !== 'all' ||
-    state.searchQuery !== '' ||
-    state.selectedTags.length > 0 ||
-    state.maxPrice !== DEFAULT_MAX_PRICE
-  );
-};
