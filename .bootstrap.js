@@ -77,12 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add @radix-ui/react-icons@^1.3.2",
-    "bun add swiper@^11.1.4",
-    "bun add react-intersection-observer@^9.13.1",
-    "bun add swiper"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
