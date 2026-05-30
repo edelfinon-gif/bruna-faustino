@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, ShoppingBag } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 export function AppHeader() {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,6 +21,17 @@ export function AppHeader() {
     { name: 'Benefícios', href: '/#benefits' },
     { name: 'Privacidade', href: '/privacy' },
   ];
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('/#')) {
+      const id = href.replace('/#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        e.preventDefault();
+        window.history.pushState(null, '', href);
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
   return (
     <header className={cn(
       "sticky top-0 z-40 w-full border-b transition-all duration-300",
@@ -42,9 +54,10 @@ export function AppHeader() {
           </div>
           <nav className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
-              <Link 
+              <Link
                 key={link.name}
-                to={link.href} 
+                to={link.href}
+                onClick={(e) => handleAnchorClick(e, link.href)}
                 className={cn(
                   "text-sm font-bold uppercase tracking-widest transition-all hover:text-purple-berry relative group",
                   location.pathname === link.href ? "text-purple-berry" : "text-muted-foreground"
@@ -59,10 +72,14 @@ export function AppHeader() {
             <div className="hidden sm:flex items-center mr-2">
               <ThemeToggle className="static" />
             </div>
-            <Button variant="ghost" size="icon" className="relative text-purple-berry hover:bg-purple-berry/5 sm:hidden">
-              <ShoppingBag className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-orange-peach rounded-full" />
-            </Button>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="relative">
+              <Button variant="ghost" size="icon" className="text-purple-berry hover:bg-purple-berry/5">
+                <ShoppingBag className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-orange-peach text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background">
+                  2
+                </span>
+              </Button>
+            </motion.div>
             <Button className="hidden sm:flex btn-gradient px-8 h-11 rounded-full font-bold shadow-lg hover:shadow-purple-berry/20 hover:scale-105 active:scale-95 transition-all">
               Peça Agora
             </Button>

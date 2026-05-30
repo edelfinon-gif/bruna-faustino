@@ -8,7 +8,7 @@ import { ProductFilterSheet } from '@/components/ProductFilterSheet';
 import { Toaster } from '@/components/ui/sonner';
 /**
  * Main application layout wrapper.
- * Refined with Route Transitions and Premium Visual Hierarchy.
+ * Final Phase: Social refinement & Build stabilization.
  */
 export function App() {
   const location = useLocation();
@@ -27,9 +27,9 @@ export function App() {
             <ProductFilterSheet />
           </SidebarContent>
         </Sidebar>
-        <SidebarInset className="flex-1 flex flex-col min-h-screen relative bg-transparent">
+        <SidebarInset className="flex-1 flex flex-col min-h-screen relative bg-transparent overflow-x-hidden">
           <AppHeader />
-          <main className="flex-1 flex flex-col relative">
+          <main className="flex-1 flex flex-col relative w-full overflow-x-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -37,13 +37,16 @@ export function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -5 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex-1 flex flex-col"
+                className="flex-1 flex flex-col w-full overflow-x-hidden"
               >
                 <Suspense fallback={
                   <div className="flex-1 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="h-12 w-12 rounded-full border-4 border-purple-berry border-t-transparent animate-spin" />
-                      <p className="text-purple-berry font-bold animate-pulse uppercase tracking-widest text-xs">Preparando seu Bloom...</p>
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="relative">
+                        <div className="h-16 w-16 rounded-full border-4 border-purple-berry/20 border-t-purple-berry animate-spin" />
+                        <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-transparent border-b-orange-peach animate-[spin_2s_linear_infinite]" />
+                      </div>
+                      <p className="text-purple-berry font-black animate-pulse uppercase tracking-widest text-xs">Colhendo Açaí Fresco...</p>
                     </div>
                   </div>
                 }>

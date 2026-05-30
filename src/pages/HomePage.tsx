@@ -17,22 +17,20 @@ import {
   CheckCircle2,
   Instagram,
   Send,
-  Droplets
+  Droplets,
+  MessageCircle
 } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import type { Product } from '@shared/types';
 import { useFilterStore } from '@/store/useFilterStore';
-
 export function HomePage() {
-  // Zustand selectors - STRICT: One field per store call, no useShallow
   const categoryId = useFilterStore((s) => s.categoryId);
   const maxPrice = useFilterStore((s) => s.maxPrice);
   const searchQuery = useFilterStore((s) => s.searchQuery);
   const selectedTagsString = useFilterStore((s) => s.selectedTags.join(','));
   const resetFilters = useFilterStore((s) => s.resetFilters);
-  // Derive stable array from primitive string to prevent re-renders
-  const selectedTags = useMemo(() => 
-    selectedTagsString ? selectedTagsString.split(',') : [], 
+  const selectedTags = useMemo(() =>
+    selectedTagsString ? selectedTagsString.split(',') : [],
     [selectedTagsString]
   );
   const { data: products, isLoading } = useQuery({
@@ -49,8 +47,16 @@ export function HomePage() {
     });
   }, [products, maxPrice, searchQuery, selectedTags]);
   const hasActiveFilters = categoryId !== 'all' || selectedTags.length > 0 || searchQuery !== '';
+  const instaPosts = [
+    { url: "https://images.unsplash.com/photo-1590301157890-4810ed352733?q=80&w=400&auto=format&fit=crop", likes: "1.2k", comments: "45" },
+    { url: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=400&auto=format&fit=crop", likes: "892", comments: "32" },
+    { url: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?q=80&w=400&auto=format&fit=crop", likes: "2.5k", comments: "128" },
+    { url: "https://images.unsplash.com/photo-1577805947697-89e18249d767?q=80&w=400&auto=format&fit=crop", likes: "1.5k", comments: "67" },
+    { url: "https://images.unsplash.com/photo-1628557044797-f21a177c37ec?q=80&w=400&auto=format&fit=crop", likes: "654", comments: "21" },
+    { url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop", likes: "3.1k", comments: "204" }
+  ];
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background py-16 md:py-24 lg:py-32 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -78,25 +84,29 @@ export function HomePage() {
                 >
                   Ver Cardápio <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry/5 transition-all">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg h-14 px-8 rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry/5 transition-all"
+                  onClick={() => document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' })}
+                >
                   Nossa História
                 </Button>
               </div>
             </motion.div>
           </div>
         </div>
-        {/* Floating Elements */}
-        <motion.div 
+        <motion.div
           animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 right-[15%] text-green-vibrant/20 hidden lg:block"
+          className="absolute top-20 right-[15%] text-green-vibrant/20 hidden lg:block pointer-events-none"
         >
           <Leaf size={120} />
         </motion.div>
-        <motion.div 
+        <motion.div
           animate={{ y: [0, 20, 0], rotate: [0, -10, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-20 right-[10%] text-purple-berry/10 hidden lg:block"
+          className="absolute bottom-20 right-[10%] text-purple-berry/10 hidden lg:block pointer-events-none"
         >
           <Droplets size={160} />
         </motion.div>
@@ -104,7 +114,7 @@ export function HomePage() {
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-green-vibrant/10 rounded-full blur-3xl" />
       </section>
       {/* Benefits Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
+      <section id="benefits" className="py-16 md:py-24 bg-muted/30 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {[
@@ -131,7 +141,7 @@ export function HomePage() {
         </div>
       </section>
       {/* Product Showcase */}
-      <section id="menu" className="py-16 md:py-24 lg:py-32 scroll-mt-16">
+      <section id="menu" className="py-16 md:py-24 lg:py-32 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div className="max-w-xl">
@@ -150,7 +160,7 @@ export function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-square rounded-2xl" />
+                  <Skeleton className="aspect-[4/5] rounded-2xl" />
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                 </div>
@@ -254,6 +264,39 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      {/* Instagram Feed Refined */}
+      <section className="py-16 border-t overflow-hidden bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="text-center md:text-left">
+            <h2 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2 text-foreground">
+              <Instagram className="h-6 w-6 text-purple-berry" /> @acaibloom.oficial
+            </h2>
+            <p className="text-muted-foreground text-sm">Siga nossa jornada saudável no Instagram e use #AçaiBloom</p>
+          </div>
+          <Button variant="outline" className="rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry hover:text-white transition-colors">Ver Perfil Completo</Button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {instaPosts.map((post, i) => (
+            <div key={i} className="aspect-square relative group cursor-pointer overflow-hidden border border-border/50 shadow-sm">
+              <img 
+                src={post.url} 
+                alt={`Instagram Post ${i}`} 
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center gap-4 text-white">
+                <div className="flex items-center gap-1">
+                  <Heart className="h-5 w-5 fill-white" />
+                  <span className="text-sm font-bold">{post.likes}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageCircle className="h-5 w-5 fill-white" />
+                  <span className="text-sm font-bold">{post.comments}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
       {/* Newsletter */}
       <section className="py-16 md:py-24 border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -279,28 +322,20 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      {/* Instagram Feed */}
-      <section className="py-16 border-t overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold flex items-center justify-center md:justify-start gap-2 text-foreground">
-              <Instagram className="h-6 w-6 text-purple-berry" /> @acaibloom.oficial
-            </h2>
-            <p className="text-muted-foreground text-sm">Siga nossa jornada saudável no Instagram e use #AçaiBloom</p>
-          </div>
-          <Button variant="outline" className="rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry hover:text-white transition-colors">Ver Perfil Completo</Button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="aspect-square bg-muted relative group cursor-pointer overflow-hidden border border-border/50">
-              <div className="absolute inset-0 bg-purple-berry/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
-                <Instagram className="text-white h-8 w-8" />
-              </div>
-              <div className="w-full h-full bg-muted-foreground/10 animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* WhatsApp Floating Button */}
+      <motion.a
+        href="https://wa.me/5511987654321"
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-6 z-50 h-16 w-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,211,102,0.5)] cursor-pointer"
+      >
+        <MessageCircle size={32} className="fill-current" />
+        <span className="absolute inset-0 rounded-full animate-ping bg-[#25D366]/40" />
+      </motion.a>
     </div>
   );
 }
