@@ -14,9 +14,9 @@ export function App() {
   const location = useLocation();
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="flex min-h-screen w-full bg-[#FAFAFA] font-sans selection:bg-purple-berry/20 selection:text-purple-berry overflow-x-hidden">
-        {/* Desktop Filter Sidebar */}
-        <Sidebar className="hidden md:block border-r border-border/40 w-[280px] bg-white">
+      <div className="flex min-h-screen w-full bg-background font-sans selection:bg-purple-berry/20 selection:text-purple-berry overflow-x-hidden">
+        {/* Sidebar handles its own desktop/mobile visibility logic via Sidebar.tsx */}
+        <Sidebar className="border-r border-border/40 w-[280px] bg-white">
           <SidebarHeader className="h-20 flex items-center px-8 border-b bg-white">
             <div className="flex items-center gap-2">
               <div className="h-7 w-7 rounded-lg bg-purple-berry flex items-center justify-center text-white font-bold text-sm">A</div>

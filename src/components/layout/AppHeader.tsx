@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Menu, ShoppingBag } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -40,9 +40,7 @@ export function AppHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex h-full items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="md:hidden">
-              <SidebarTrigger className="hover:bg-purple-berry/5 text-purple-berry" />
-            </div>
+            <SidebarTrigger className="hover:bg-purple-berry/5 text-purple-berry" />
             <Link to="/" className="flex items-center gap-2 group">
               <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-berry to-orange-peach flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:rotate-12 transition-transform">
                 A
@@ -60,7 +58,9 @@ export function AppHeader() {
                 onClick={(e) => handleAnchorClick(e, link.href)}
                 className={cn(
                   "text-sm font-bold uppercase tracking-widest transition-all hover:text-purple-berry relative group",
-                  location.pathname === link.href ? "text-purple-berry" : "text-muted-foreground"
+                  location.pathname === link.href || (location.pathname === '/' && location.hash === link.href.replace('/', '')) 
+                    ? "text-purple-berry" 
+                    : "text-muted-foreground"
                 )}
               >
                 {link.name}
@@ -83,11 +83,6 @@ export function AppHeader() {
             <Button className="hidden sm:flex btn-gradient px-8 h-11 rounded-full font-bold shadow-lg hover:shadow-purple-berry/20 hover:scale-105 active:scale-95 transition-all">
               Peça Agora
             </Button>
-            <div className="md:hidden flex items-center">
-              <Button variant="ghost" size="icon" className="text-foreground">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>

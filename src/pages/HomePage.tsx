@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -27,12 +27,21 @@ export function HomePage() {
   const categoryId = useFilterStore((s) => s.categoryId);
   const maxPrice = useFilterStore((s) => s.maxPrice);
   const searchQuery = useFilterStore((s) => s.searchQuery);
-  const selectedTagsString = useFilterStore((s) => s.selectedTags.join(','));
+  const selectedTags = useFilterStore((s) => s.selectedTags);
   const resetFilters = useFilterStore((s) => s.resetFilters);
-  const selectedTags = useMemo(() =>
-    selectedTagsString ? selectedTagsString.split(',') : [],
-    [selectedTagsString]
-  );
+  // Handle hash navigation on mount
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  }, []);
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', categoryId],
     queryFn: () => api<Product[]>(`/api/products${categoryId !== 'all' ? `?categoryId=${categoryId}` : ''}`),
@@ -84,9 +93,9 @@ export function HomePage() {
                 >
                   Ver Cardápio <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
+                <Button
+                  size="lg"
+                  variant="outline"
                   className="text-lg h-14 px-8 rounded-full border-purple-berry text-purple-berry hover:bg-purple-berry/5 transition-all"
                   onClick={() => document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' })}
                 >
@@ -252,7 +261,7 @@ export function HomePage() {
                   {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
                 </div>
                 <p className="italic mb-6 text-lg flex-1">"{t.text}"</p>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mt-auto">
                   <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
                   <div>
                     <p className="font-bold">{t.name}</p>
@@ -278,9 +287,9 @@ export function HomePage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
           {instaPosts.map((post, i) => (
             <div key={i} className="aspect-square relative group cursor-pointer overflow-hidden border border-border/50 shadow-sm">
-              <img 
-                src={post.url} 
-                alt={`Instagram Post ${i}`} 
+              <img
+                src={post.url}
+                alt={`Instagram Post ${i}`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center gap-4 text-white">
