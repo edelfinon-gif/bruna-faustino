@@ -22,10 +22,7 @@ import {
 import { api } from '@/lib/api-client';
 import type { Product } from '@shared/types';
 import { useFilterStore } from '@/store/useFilterStore';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
+
 export function HomePage() {
   // Zustand selectors - STRICT: One field per store call, no useShallow
   const categoryId = useFilterStore((s) => s.categoryId);
@@ -225,18 +222,7 @@ export function HomePage() {
               Veja por que a AçaiBloom é a escolha favorita de quem busca qualidade e sabor incomparável.
             </p>
           </div>
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            spaceBetween={30}
-            slidesPerView={1}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-            className="pb-12"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { name: "Ana Silva", text: "O melhor açaí que já comi na vida! A granola é divina e super crocante.", role: "Atleta Profissional" },
               { name: "Lucas Rocha", text: "Os smoothies são perfeitos para o pós-treino. Cremosos e nutritivos!", role: "Nutricionista" },
@@ -244,23 +230,28 @@ export function HomePage() {
               { name: "Bruno Faustino", text: "Qualidade impecável. Dá pra sentir o frescor das frutas em cada colherada.", role: "Empresário" },
               { name: "Mariana Costa", text: "A taça proteica salvou meu lanche da tarde. Saborosa e mata a fome!", role: "Crossfitter" }
             ].map((t, i) => (
-              <SwiperSlide key={i}>
-                <div className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 h-full flex flex-col">
-                  <div className="flex gap-1 mb-4 text-orange-peach">
-                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
-                  </div>
-                  <p className="italic mb-6 text-lg flex-1">"{t.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
-                    <div>
-                      <p className="font-bold">{t.name}</p>
-                      <p className="text-xs text-purple-berry-foreground/60">{t.role}</p>
-                    </div>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 h-full flex flex-col"
+              >
+                <div className="flex gap-1 mb-4 text-orange-peach">
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
+                </div>
+                <p className="italic mb-6 text-lg flex-1">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
+                  <div>
+                    <p className="font-bold">{t.name}</p>
+                    <p className="text-xs text-purple-berry-foreground/60">{t.role}</p>
                   </div>
                 </div>
-              </SwiperSlide>
+              </motion.div>
             ))}
-          </Swiper>
+          </div>
         </div>
       </section>
       {/* Newsletter */}
