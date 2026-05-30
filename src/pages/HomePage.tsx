@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
 import {
   ShoppingCart,
   ArrowRight,
@@ -18,18 +17,20 @@ import {
   Instagram,
   Send,
   Droplets,
-  MessageCircle
+  MessageCircle,
+  PackageOpen
 } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import type { Product } from '@shared/types';
-import { useFilterStore } from '@/store/useFilterStore';
+import { useFilterStore, checkIsFilterActive } from '@/store/useFilterStore';
 export function HomePage() {
   const categoryId = useFilterStore((s) => s.categoryId);
   const maxPrice = useFilterStore((s) => s.maxPrice);
   const searchQuery = useFilterStore((s) => s.searchQuery);
   const selectedTags = useFilterStore((s) => s.selectedTags);
   const resetFilters = useFilterStore((s) => s.resetFilters);
-  // Handle hash navigation on mount
+  // Computed filter state check
+  const hasActiveFilters = useFilterStore(checkIsFilterActive);
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
@@ -45,9 +46,11 @@ export function HomePage() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', categoryId],
     queryFn: () => api<Product[]>(`/api/products${categoryId !== 'all' ? `?categoryId=${categoryId}` : ''}`),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
   const filteredProducts = useMemo(() => {
-    return products?.filter(p => {
+    const list = products ?? [];
+    return list.filter(p => {
       const matchesPrice = p.price <= maxPrice;
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             p.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -55,7 +58,6 @@ export function HomePage() {
       return matchesPrice && matchesSearch && matchesTags;
     });
   }, [products, maxPrice, searchQuery, selectedTags]);
-  const hasActiveFilters = categoryId !== 'all' || selectedTags.length > 0 || searchQuery !== '';
   const instaPosts = [
     { url: "https://images.unsplash.com/photo-1590301157890-4810ed352733?q=80&w=400&auto=format&fit=crop", likes: "1.2k", comments: "45" },
     { url: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=400&auto=format&fit=crop", likes: "892", comments: "32" },
@@ -160,14 +162,18 @@ export function HomePage() {
               </p>
             </div>
             {hasActiveFilters && (
-              <Button variant="link" onClick={resetFilters} className="text-purple-berry p-0 h-auto font-semibold hover:no-underline">
-                Limpar todos os filtros
+              <Button 
+                variant="link" 
+                onClick={resetFilters} 
+                className="text-purple-berry p-0 h-auto font-bold uppercase tracking-wider text-xs hover:no-underline"
+              >
+                Limpar filtros
               </Button>
             )}
           </div>
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div key={i} className="space-y-4">
                   <Skeleton className="aspect-[4/5] rounded-2xl" />
                   <Skeleton className="h-6 w-3/4" />
@@ -175,7 +181,7 @@ export function HomePage() {
                 </div>
               ))}
             </div>
-          ) : filteredProducts && filteredProducts.length > 0 ? (
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredProducts.map((product, idx) => (
                 <motion.div
@@ -191,6 +197,7 @@ export function HomePage() {
                         src={product.image}
                         alt={product.name}
                         className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <Badge className="absolute top-4 left-4 bg-white/95 text-purple-berry border-none backdrop-blur-sm font-bold shadow-sm">
@@ -219,15 +226,30 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center glass rounded-[2rem]">
-              <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
-                <FilterX className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-foreground">Ops! Nada por aqui.</h3>
-              <p className="text-muted-foreground mb-8 max-w-sm">
-                Não encontramos produtos que correspondam aos seus filtros. Tente resetar ou mudar sua busca.
-              </p>
-              <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full h-12">Resetar Filtros</Button>
+            <div className="flex flex-col items-center justify-center py-24 text-center glass rounded-[2rem] border-dashed border-2 border-muted-foreground/20">
+              {hasActiveFilters ? (
+                <>
+                  <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+                    <FilterX className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-foreground">Ops! Nada por aqui.</h3>
+                  <p className="text-muted-foreground mb-8 max-w-sm">
+                    Não encontramos produtos que correspondam aos seus filtros atuais. Tente resetar ou mudar sua busca.
+                  </p>
+                  <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full h-12">Resetar Filtros</Button>
+                </>
+              ) : (
+                <>
+                  <div className="w-24 h-24 bg-purple-berry/5 rounded-full flex items-center justify-center mb-6">
+                    <PackageOpen className="h-12 w-12 text-purple-berry/40" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-foreground">Cardápio em Preparo</h3>
+                  <p className="text-muted-foreground mb-8 max-w-sm">
+                    Nossa equipe está preparando as melhores combinações de açaí. Volte em instantes para ver as novidades!
+                  </p>
+                  <Button onClick={() => window.location.reload()} variant="outline" className="rounded-full h-12 border-purple-berry text-purple-berry">Atualizar Página</Button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -291,6 +313,7 @@ export function HomePage() {
                 src={post.url}
                 alt={`Instagram Post ${i}`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center gap-4 text-white">
                 <div className="flex items-center gap-1">
@@ -320,9 +343,9 @@ export function HomePage() {
               </ul>
             </div>
             <div className="w-full max-w-md bg-background p-2 rounded-full shadow-2xl flex items-center pr-2 border border-green-vibrant/20">
-              <Input
+              <input
                 placeholder="Seu melhor e-mail"
-                className="border-none bg-transparent focus-visible:ring-0 text-lg h-14 px-6 flex-1"
+                className="border-none bg-transparent focus-visible:ring-0 text-lg h-14 px-6 flex-1 outline-none"
               />
               <Button size="icon" className="h-12 w-12 rounded-full btn-gradient hover:rotate-12 transition-all">
                 <Send className="h-5 w-5" />

@@ -15,9 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Search, RotateCcw } from "lucide-react";
 import { api } from '@/lib/api-client';
 import type { Category } from '@shared/types';
-import { useFilterStore } from '@/store/useFilterStore';
+import { useFilterStore, checkIsFilterActive, DEFAULT_MAX_PRICE } from '@/store/useFilterStore';
 export function ProductFilterSheet() {
-  // STRICT: One field per store call, no useShallow
   const categoryId = useFilterStore((s) => s.categoryId);
   const maxPrice = useFilterStore((s) => s.maxPrice);
   const searchQuery = useFilterStore((s) => s.searchQuery);
@@ -27,9 +26,11 @@ export function ProductFilterSheet() {
   const setSearchQuery = useFilterStore((s) => s.setSearchQuery);
   const toggleTag = useFilterStore((s) => s.toggleTag);
   const resetFilters = useFilterStore((s) => s.resetFilters);
+  const hasActiveFilters = useFilterStore(checkIsFilterActive);
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => api<Category[]>('/api/categories'),
+    staleTime: 1000 * 60 * 10,
   });
   const availableTags = ['vegano', 'proteico', 'zero-açúcar', 'sem-glúten', 'detox'];
   const handlePriceChange = useCallback((val: number[]) => {
@@ -39,14 +40,16 @@ export function ProductFilterSheet() {
     <div className="p-6 space-y-8 h-full bg-background">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-bold text-foreground">Refinar Busca</h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={resetFilters} 
-          className="h-8 px-2 text-xs text-muted-foreground hover:text-purple-berry hover:bg-purple-berry/5"
-        >
-          <RotateCcw className="h-3 w-3 mr-1" /> Limpar
-        </Button>
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="h-8 px-2 text-xs text-muted-foreground hover:text-purple-berry hover:bg-purple-berry/5 font-bold"
+          >
+            <RotateCcw className="h-3 w-3 mr-1" /> Limpar
+          </Button>
+        )}
       </div>
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -89,7 +92,7 @@ export function ProductFilterSheet() {
             <div className="pt-6 px-2">
               <Slider
                 value={[maxPrice]}
-                max={100}
+                max={DEFAULT_MAX_PRICE}
                 min={0}
                 step={1}
                 onValueChange={handlePriceChange}
