@@ -1,10 +1,13 @@
 import React, { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   ShoppingCart,
   ArrowRight,
@@ -18,7 +21,8 @@ import {
   Send,
   Droplets,
   MessageCircle,
-  PackageOpen
+  PackageOpen,
+  Info
 } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import type { Product } from '@shared/types';
@@ -29,7 +33,6 @@ export function HomePage() {
   const searchQuery = useFilterStore((s) => s.searchQuery);
   const selectedTags = useFilterStore((s) => s.selectedTags);
   const resetFilters = useFilterStore((s) => s.resetFilters);
-  // Computed filter state check
   const hasActiveFilters = useFilterStore(checkIsFilterActive);
   useEffect(() => {
     const hash = window.location.hash;
@@ -46,7 +49,7 @@ export function HomePage() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', categoryId],
     queryFn: () => api<Product[]>(`/api/products${categoryId !== 'all' ? `?categoryId=${categoryId}` : ''}`),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
   const filteredProducts = useMemo(() => {
     const list = products ?? [];
@@ -58,6 +61,13 @@ export function HomePage() {
       return matchesPrice && matchesSearch && matchesTags;
     });
   }, [products, maxPrice, searchQuery, selectedTags]);
+  const testimonials = [
+    { name: "Ana Silva", text: "O melhor açaí que já comi na vida! A granola é divina e super crocante.", role: "Atleta Profissional" },
+    { name: "Lucas Rocha", text: "Os smoothies são perfeitos para o pós-treino. Cremosos e nutritivos!", role: "Nutricionista" },
+    { name: "Carla Mendes", text: "Entrega super rápida e o produto chega geladinho. Experiência nota 10!", role: "UX Designer" },
+    { name: "Bruno Faustino", text: "Qualidade impecável. Dá pra sentir o frescor das frutas em cada colherada.", role: "Empresário" },
+    { name: "Mariana Costa", text: "A taça proteica salvou meu lanche da tarde. Saborosa e mata a fome!", role: "Crossfitter" }
+  ];
   const instaPosts = [
     { url: "https://images.unsplash.com/photo-1590301157890-4810ed352733?q=80&w=400&auto=format&fit=crop", likes: "1.2k", comments: "45" },
     { url: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=400&auto=format&fit=crop", likes: "892", comments: "32" },
@@ -73,11 +83,11 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <Badge variant="outline" className="mb-4 border-purple-berry text-purple-berry font-semibold px-4 py-1">
+              <Badge variant="outline" className="mb-4 border-purple-berry text-purple-berry font-semibold px-4 py-1 animate-pulse">
                 Premium & Natural
               </Badge>
               <h1 className="text-display mb-6">
@@ -107,6 +117,7 @@ export function HomePage() {
             </motion.div>
           </div>
         </div>
+        {/* Floating Decorative Elements */}
         <motion.div
           animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -121,7 +132,7 @@ export function HomePage() {
         >
           <Droplets size={160} />
         </motion.div>
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-purple-berry/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-purple-berry/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-green-vibrant/10 rounded-full blur-3xl" />
       </section>
       {/* Benefits Section */}
@@ -135,13 +146,13 @@ export function HomePage() {
             ].map((benefit, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="flex flex-col items-center text-center space-y-4 p-8 rounded-3xl bg-background shadow-sm hover:shadow-md transition-shadow"
+                className="flex flex-col items-center text-center space-y-4 p-8 rounded-3xl bg-background shadow-sm hover:shadow-md transition-shadow group"
               >
-                <div className="h-16 w-16 rounded-2xl bg-green-vibrant/10 flex items-center justify-center text-green-vibrant">
+                <div className="h-16 w-16 rounded-2xl bg-green-vibrant/10 flex items-center justify-center text-green-vibrant group-hover:rotate-6 transition-transform">
                   <benefit.icon className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-bold">{benefit.title}</h3>
@@ -162,9 +173,9 @@ export function HomePage() {
               </p>
             </div>
             {hasActiveFilters && (
-              <Button 
-                variant="link" 
-                onClick={resetFilters} 
+              <Button
+                variant="link"
+                onClick={resetFilters}
                 className="text-purple-berry p-0 h-auto font-bold uppercase tracking-wider text-xs hover:no-underline"
               >
                 Limpar filtros
@@ -186,8 +197,8 @@ export function HomePage() {
               {filteredProducts.map((product, idx) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: idx * 0.05 }}
                 >
@@ -201,8 +212,22 @@ export function HomePage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <Badge className="absolute top-4 left-4 bg-white/95 text-purple-berry border-none backdrop-blur-sm font-bold shadow-sm">
-                        {product.tags[0]?.toUpperCase() || 'NOVO'}
+                        {product.tags[0]?.toUpperCase() || 'PREMIUM'}
                       </Badge>
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="h-8 w-8 bg-white rounded-full flex items-center justify-center text-purple-berry shadow-lg cursor-help">
+                                <Info size={16} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs font-bold">{product.calories} kcal</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
                     <CardHeader className="p-5 pb-2 flex-1">
                       <CardTitle className="text-lg font-bold group-hover:text-purple-berry transition-colors">{product.name}</CardTitle>
@@ -227,72 +252,57 @@ export function HomePage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-center glass rounded-[2rem] border-dashed border-2 border-muted-foreground/20">
-              {hasActiveFilters ? (
-                <>
-                  <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
-                    <FilterX className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3 text-foreground">Ops! Nada por aqui.</h3>
-                  <p className="text-muted-foreground mb-8 max-w-sm">
-                    Não encontramos produtos que correspondam aos seus filtros atuais. Tente resetar ou mudar sua busca.
-                  </p>
-                  <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full h-12">Resetar Filtros</Button>
-                </>
-              ) : (
-                <>
-                  <div className="w-24 h-24 bg-purple-berry/5 rounded-full flex items-center justify-center mb-6">
-                    <PackageOpen className="h-12 w-12 text-purple-berry/40" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3 text-foreground">Cardápio em Preparo</h3>
-                  <p className="text-muted-foreground mb-8 max-w-sm">
-                    Nossa equipe está preparando as melhores combinações de açaí. Volte em instantes para ver as novidades!
-                  </p>
-                  <Button onClick={() => window.location.reload()} variant="outline" className="rounded-full h-12 border-purple-berry text-purple-berry">Atualizar Página</Button>
-                </>
-              )}
+              <div className="w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+                <FilterX className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-foreground">Nada por aqui.</h3>
+              <p className="text-muted-foreground mb-8 max-w-sm">
+                Tente ajustar seus filtros para encontrar o que procura.
+              </p>
+              <Button onClick={resetFilters} className="btn-gradient px-8 rounded-full h-12">Resetar Filtros</Button>
             </div>
           )}
         </div>
       </section>
-      {/* Premium Testimonials Slider */}
+      {/* Premium Testimonials Swiper */}
       <section className="py-16 md:py-24 bg-purple-berry text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Quem provou, amou</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Experiência AçaiBloom</h2>
             <p className="text-purple-berry-foreground/80 max-w-xl mx-auto">
-              Veja por que a AçaiBloom é a escolha favorita de quem busca qualidade e sabor incomparável.
+              Veja por que somos a escolha favorita de quem busca qualidade e sabor incomparável.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: "Ana Silva", text: "O melhor açaí que já comi na vida! A granola é divina e super crocante.", role: "Atleta Profissional" },
-              { name: "Lucas Rocha", text: "Os smoothies são perfeitos para o pós-treino. Cremosos e nutritivos!", role: "Nutricionista" },
-              { name: "Carla Mendes", text: "Entrega super rápida e o produto chega geladinho. Experiência nota 10!", role: "UX Designer" },
-              { name: "Bruno Faustino", text: "Qualidade impecável. Dá pra sentir o frescor das frutas em cada colherada.", role: "Empresário" },
-              { name: "Mariana Costa", text: "A taça proteica salvou meu lanche da tarde. Saborosa e mata a fome!", role: "Crossfitter" }
-            ].map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 h-full flex flex-col"
-              >
-                <div className="flex gap-1 mb-4 text-orange-peach">
-                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
-                </div>
-                <p className="italic mb-6 text-lg flex-1">"{t.text}"</p>
-                <div className="flex items-center gap-3 mt-auto">
-                  <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
-                  <div>
-                    <p className="font-bold">{t.name}</p>
-                    <p className="text-xs text-purple-berry-foreground/60">{t.role}</p>
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={30}
+            slidesPerView={1}
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 }
+            }}
+            className="pb-16"
+          >
+            {testimonials.map((t, i) => (
+              <SwiperSlide key={i}>
+                <div className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 h-64 flex flex-col">
+                  <div className="flex gap-1 mb-4 text-orange-peach">
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="h-4 w-4 fill-current" />)}
+                  </div>
+                  <p className="italic mb-6 text-base flex-1 line-clamp-3">"{t.text}"</p>
+                  <div className="flex items-center gap-3 mt-auto">
+                    <div className="h-10 w-10 rounded-full bg-orange-peach/20 flex items-center justify-center font-bold text-orange-peach border border-orange-peach/20">{t.name[0]}</div>
+                    <div>
+                      <p className="font-bold text-sm">{t.name}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-purple-berry-foreground/60">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         </div>
       </section>
       {/* Instagram Feed Refined */}
@@ -342,10 +352,10 @@ export function HomePage() {
                 <li className="flex items-center gap-2 text-sm font-bold text-purple-berry"><CheckCircle2 className="h-4 w-4" /> Dicas Nutricionais</li>
               </ul>
             </div>
-            <div className="w-full max-w-md bg-background p-2 rounded-full shadow-2xl flex items-center pr-2 border border-green-vibrant/20">
+            <div className="w-full max-w-md bg-background p-2 rounded-full shadow-2xl flex items-center pr-2 border border-green-vibrant/30 focus-within:ring-2 focus-within:ring-green-vibrant/50 transition-all">
               <input
                 placeholder="Seu melhor e-mail"
-                className="border-none bg-transparent focus-visible:ring-0 text-lg h-14 px-6 flex-1 outline-none"
+                className="border-none bg-transparent focus-visible:ring-0 text-base md:text-lg h-14 px-6 flex-1 outline-none text-foreground placeholder:text-muted-foreground"
               />
               <Button size="icon" className="h-12 w-12 rounded-full btn-gradient hover:rotate-12 transition-all">
                 <Send className="h-5 w-5" />

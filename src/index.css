@@ -1,6 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Swiper Styles */
+@import 'swiper/css';
+@import 'swiper/css/pagination';
+@import 'swiper/css/autoplay';
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -45,13 +49,16 @@
     --input: 240 3.7% 15.9%;
     --ring: 271 48% 45%;
   }
+  html, body {
+    @apply overflow-x-hidden scroll-smooth;
+  }
 }
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }
 @layer components {
@@ -70,4 +77,11 @@
   .text-gradient {
     @apply bg-gradient-to-r from-purple-berry via-orange-peach to-green-vibrant bg-clip-text text-transparent;
   }
+}
+/* Swiper Pagination Customization */
+.swiper-pagination-bullet {
+  @apply bg-white/40 opacity-100;
+}
+.swiper-pagination-bullet-active {
+  @apply bg-orange-peach scale-125;
 }
