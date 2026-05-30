@@ -1,6 +1,6 @@
 # acaibloom-landing-xmkm8pqyb6d4okscq9tle
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/edelfinon-gif/bruna-faustino)
 
 A production-ready full-stack template built with React, TypeScript, and Cloudflare Workers. This project demonstrates a complete application scaffold featuring serverless state management with Durable Objects, a modern React frontend, and a clean API layer.
 
@@ -96,7 +96,7 @@ Each entity automatically gets CRUD operations, indexing, and concurrency-safe m
 
 ## Deployment
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/edelfinon-gif/bruna-faustino)
 
 Deploy to Cloudflare Workers:
 
